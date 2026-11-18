@@ -1,0 +1,337 @@
+/* All styling for the Animator app. The .gleam files only attach class names. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+/* ── Layout: two columns ─────────────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background: #1a1a2e;
+  color: #d4c5a0;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+}
+
+/* Left column: the code editor. */
+.code-col {
+  width: 42%;
+  min-width: 320px;
+  max-width: 720px;
+  flex-shrink: 0;
+  display: flex;
+  border-right: 1px solid #3a3a5e;
+  background: #0f0f1e;
+}
+
+/* The code column stays in the DOM when collapsed, so CodeMirror keeps its
+   state; hiding it gives the right column the full width. */
+.app.code-hidden .code-col { display: none; }
+
+/* A small emoji button (the code pane's collapse toggle, and the playback
+   controls once they exist). */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2a4a;
+  color: #d4c5a0;
+  border: 1px solid #4a4a8a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 5px 8px;
+}
+.icon-btn:hover { background: #3a3a5e; }
+
+.label { font-size: 12px; color: #9a8a70; }
+
+.select {
+  background: #0d0d1a;
+  color: #d4c5a0;
+  border: 1px solid #3a3a5e;
+  padding: 6px 8px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  border-radius: 3px;
+}
+.select:focus { outline: 1px solid #6a6aaa; }
+
+
+/* ── Code panel (left column) ───────────────────────────────────────────── */
+
+.code-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #1a1a3e;
+  border-bottom: 1px solid #3a3a5e;
+}
+.code-title {
+  color: #e8d8b0;
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* Wrapper holding the editor. */
+.code-editor-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+}
+/* CodeMirror mount node: grows to fill the panel. */
+.code-editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background: #0d0d1a;
+}
+.code-editor .cm-editor { width: 100%; height: 100%; }
+
+/* Collapsible reference of the built-ins available to draw functions. */
+.reference {
+  margin: 8px 14px 0;
+  border: 1px solid #3a3a5e;
+  border-radius: 4px;
+  background: #0d0d1a;
+  overflow: hidden;
+}
+.reference-summary {
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #b8a888;
+  font-family: monospace;
+  font-size: 12px;
+  user-select: none;
+}
+.reference-summary:hover { color: #e8d8b0; }
+.reference-body {
+  padding: 4px 12px 10px;
+  border-top: 1px solid #3a3a5e;
+}
+.reference-group { margin-top: 8px; }
+.reference-group-title {
+  color: #8a8aca;
+  font-family: monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.reference-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 1px 0;
+}
+.reference-sig {
+  color: #89ddff;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre;
+}
+.reference-desc { color: #6a7a8a; font-size: 11px; }
+
+/* ── Animation area (right column) ──────────────────────────────────────── */
+
+.canvas-area {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a14;
+  container-type: size;
+}
+
+/* The interpreter's List(Path) (or its error), shown as text before the
+   animation pane is built. */
+.output {
+  align-self: stretch;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cfe3ff;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* Leave room for the reveal button, which only overlays this pane while the
+   code column is hidden. */
+.app.code-hidden .output { padding-top: 48px; }
+
+/* Button that reveals the code column again when it is hidden. */
+.reveal-code {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
+/* A centred square that fits the (possibly non-square) animation area. Give your
+   <canvas> this class, so that drawings aren't stretched. */
+.canvas {
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+}
+
+
+
+.error-toast {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: 80%;
+}
+.error {
+  padding: 8px 12px;
+  background: rgba(58, 20, 20, 0.92);
+  border: 1px solid #aa4444;
+  border-radius: 4px;
+  color: #ffb3b3;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+.controls {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px 10px;
+  /* A subtle offset over the near-black canvas, plus a border. */
+  background: rgba(26, 26, 46, 0.82);
+  border: 1px solid #3a3a5e;
+  border-radius: 6px;
+  backdrop-filter: blur(2px);
+}
+.controls-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -2px;
+}
+.controls-head .icon-btn { padding: 2px 8px; font-size: 12px; }
+
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ctrl-btn {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 2px;
+  font-size: 18px;
+}
+.ctrl-btn:hover { background: none; filter: brightness(1.25); }
+
+.range { width: 100%; }
+.controls-row .range { flex: 1; min-width: 0; }
+
+/* A slider with its own label above it (speed, and any extension's sliders). */
+.slider-row { display: flex; flex-direction: column; gap: 4px; }
+
+/* The collapsed control panel: just a small button to bring it back. */
+.controls-show {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+}
+
+/* The drawing switcher above the editor (pick a saved drawing, or start one). */
+.code-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #3a3a5e;
+}
+.code-controls .select { flex: 1; min-width: 60px; }
+
+/* ── Extension: the Sled Studio's panel ─────────────────────────────────── */
+
+.controls.studio { width: 300px; gap: 10px; }
+.studio-head { justify-content: space-between; align-items: center; margin-bottom: 0; }
+.studio-title {
+  color: #e8d8b0;
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* The pen's instruments: a coloured dot and a name each. */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  background: #13132a;
+  color: #d4c5a0;
+  border: 1px solid #3a3a5e;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.swatch:hover { border-color: #6a6aaa; }
+.swatch.selected { border-color: #e8d8b0; background: #2a2a4a; color: #fff; }
+.swatch-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.studio-actions { display: flex; gap: 6px; }
+.text-btn {
+  flex: 1;
+  padding: 6px 8px;
+  background: #2a2a4a;
+  color: #d4c5a0;
+  border: 1px solid #4a4a8a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.text-btn:hover { background: #3a3a5e; }
+.text-btn.primary {
+  background: #f0b030;
+  border-color: #f0b030;
+  color: #1a1a2e;
+  font-weight: 600;
+}
+.text-btn.primary:hover { filter: brightness(1.1); }
